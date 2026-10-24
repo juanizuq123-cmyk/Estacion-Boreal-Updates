@@ -1,0 +1,38 @@
+name: Deploy Boreal profile channels
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/channels/**/stable.json'
+      - 'site/.nojekyll'
+      - '.github/workflows/deploy-boreal-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: boreal-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout channel manifests
+        uses: actions/checkout@v4
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload the complete channel catalog
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy Boreal channels
+        id: deployment
+        uses: actions/deploy-pages@v4
